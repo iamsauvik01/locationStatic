@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flora and Fauna around You</title>
+    <style>
+        .observation {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        img {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Flora and Fauna around You</h1>
+    <div id="observations"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const observationsContainer = document.getElementById("observations");
+            const observationsEndpoint = 'https://api.inaturalist.org/v1/observations';
+
+            function fetchObservations(latitude, longitude) {
+                fetch(`${observationsEndpoint}?lat=${latitude}&lng=${longitude}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        observationsContainer.innerHTML = '';
+
+                        data.results.forEach(observation => {
+                            const observationDiv = document.createElement("div");
+                            observationDiv.classList.add("observation");
+
+                            const speciesName = observation.taxon && observation.taxon.name ? observation.taxon.name : 'Unknown';
+                            const observerName = observation.user ? observation.user.login : 'Unknown';
+                            const location = observation.place_guess || 'Unknown';
+                            const observationDate = observation.observed_on || 'Unknown';
+
+                            const image = observation.photos && observation.photos.length > 0 ? observation.photos[0].url : '';
+
+                            observationDiv.innerHTML = `
+                                <h2>${speciesName}</h2>
+                                ${image ? `<img src="${image}" alt="${speciesName}">` : ''}
+                                <p>Observer: ${observerName}</p>
+                                <p>Location: ${location}</p>
+                                <p>Date: ${observationDate}</p>
+                            `;
+
+                            observationsContainer.appendChild(observationDiv);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                    });
+            }
+
+            // Static latitude and longitude for Bandra, Mumbai
+            const bandraLatitude = 19.0600;
+            const bandraLongitude = 72.8400;
+
+            // Fetch observations for Bandra
+            fetchObservations(bandraLatitude, bandraLongitude);
+        });
+    </script>
+</body>
+</html>
+
